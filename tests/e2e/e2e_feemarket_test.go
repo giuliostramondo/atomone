@@ -85,8 +85,10 @@ func (s *IntegrationTestSuite) testFeemarketQuery() {
 		)
 		gasPrices := s.queryFeemarketGasPrices(chainEndpoint)
 		fmt.Println("gasPrices: ", gasPrices)
-		s.Require().Positive(gasPrices.Prices.AmountOf("uatone"))
-		s.Require().Positive(gasPrices.Prices.AmountOf("uphoton"))
+		atoneAmount := gasPrices.Prices.AmountOf("uatone")
+		photonAmount := gasPrices.Prices.AmountOf("uphoton")
+		s.Require().True(atoneAmount.IsPositive())
+		s.Require().True(photonAmount.IsPositive())
 	})
 }
 
