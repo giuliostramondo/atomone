@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-
+	feemarkettypes "github.com/atomone-hub/atomone/x/feemarket/types"
 	govtypes "github.com/atomone-hub/atomone/x/gov/types"
 	govtypesv1 "github.com/atomone-hub/atomone/x/gov/types/v1"
 	govtypesv1beta1 "github.com/atomone-hub/atomone/x/gov/types/v1beta1"
 	photontypes "github.com/atomone-hub/atomone/x/photon/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 )
 
 /*
@@ -212,6 +212,27 @@ func (s *IntegrationTestSuite) testGovParamChange() {
 		newParams = s.queryPhotonParams(chainAAPIEndpoint)
 		s.Require().False(newParams.Params.MintDisabled, "expected photon param mint disabled to be false")
 	})
+	s.Run("feemarket param change", func() {
+		// check existing params
+		chainAAPIEndpoint := fmt.Sprintf("http://%s", s.valResources[s.chainA.id][0].GetHostPort("1317/tcp"))
+		senderAddress, _ := s.chainA.validators[0].keyInfo.GetAddress()
+		sender := senderAddress.String()
+		params := s.queryFeemarketParams(chainAAPIEndpoint)
+
+		oldAlpha := params.Params.Alpha
+		params.Params.Alpha = oldAlpha.Add(sdk.NewDec(1))
+
+		s.writeFeemarketParamChangeProposal(s.chainA, params.Params)
+		// Gov tests may be run in arbitrary order, each test must increment proposalCounter to have the correct proposal id to submit and query
+		proposalCounter++
+		submitGovFlags := []string{configFile(proposalParamChangeFilename)}
+		depositGovFlags := []string{strconv.Itoa(proposalCounter), depositAmount.String()}
+		voteGovFlags := []string{strconv.Itoa(proposalCounter), "yes"}
+		s.submitGovProposal(chainAAPIEndpoint, sender, proposalCounter, "atomone.feemarket.v1.MsgParams", submitGovFlags, depositGovFlags, voteGovFlags, "vote")
+
+		newParams := s.queryFeemarketParams(chainAAPIEndpoint)
+		s.Require().Equal(newParams.Params.Alpha, oldAlpha.Add(sdk.NewDec(1)))
+	})
 }
 
 func (s *IntegrationTestSuite) testGovConstitutionAmendment() {
@@ -346,6 +367,57 @@ func (s *IntegrationTestSuite) writeStakingParamChangeProposal(c *chain, params 
 	}
 	`
 	propMsgBody := fmt.Sprintf(template, govModuleAddress, cdc.MustMarshalJSON(&params), initialDepositAmount)
+	err := writeFile(filepath.Join(c.validators[0].configDir(), "config", proposalParamChangeFilename), []byte(propMsgBody))
+	s.Require().NoError(err)
+}
+func (s *IntegrationTestSuite) writeFeemarketParamChangeProposal(c *chain, params feemarkettypes.Params) {
+	// The proposal below was generated using the draft-proposal feature
+	// to guarantee the correct formatting. However it currently fails
+	drafted_proposal := `{
+		 "messages": [
+		  {
+		   "@type": "/atomone.feemarket.v1.MsgParams",
+		   "params": {
+		    "alpha": "0.900000000000000000",
+		    "beta": "1.000000000000000000",
+		    "gamma": "0.000000000000000000",
+		    "delta": "0.000000000000000000",
+		    "min_base_gas_price": "0.000100000000000000",
+		    "min_learning_rate": "0.125000000000000000",
+		    "max_learning_rate": "0.125000000000000000",
+		    "max_block_utilization": "30000000",
+		    "window": "1",
+		    "fee_denom": "uphoton",
+		    "enabled": true
+		   },
+		   "authority": "atone10d07y265gmmuvt4z0w9aw880jnsr700j5z0zqt"
+		  }
+		 ],
+		 "metadata": "ipfs://CID",
+		 "deposit": "100000uatone",
+		 "title": "Change Param Alpha",
+		 "summary": "Updating the Alpha parameter"
+		}`
+	// govModuleAddress := authtypes.NewModuleAddress(govtypes.ModuleName).String()
+	// template := `
+	//       {
+	//               "messages":[
+	//                 {
+	// 	       "@type": "/atomone.feemarket.v1.MsgParams",
+	//                       "params": %s,
+	//                       "authority": "%s"
+	//                 }
+	//               ],
+	//               "metadata": "",
+	//               "deposit": "%s",
+	//               "title": "Change in feemarket params",
+	//               "summary": "summary"
+	//       }
+	//       `
+	// propMsgBody := fmt.Sprintf(template, cdc.MustMarshalJSON(&params), govModuleAddress, initialDepositAmount)
+	propMsgBody := drafted_proposal
+	fmt.Println("Proposal Message")
+	fmt.Println(propMsgBody)
 	err := writeFile(filepath.Join(c.validators[0].configDir(), "config", proposalParamChangeFilename), []byte(propMsgBody))
 	s.Require().NoError(err)
 }
