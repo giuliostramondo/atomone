@@ -835,6 +835,7 @@ func (s *IntegrationTestSuite) execPhotonMint(
 	valIdx int,
 	from,
 	amt string,
+	gasAuto bool,
 	opt ...flagOption,
 ) (resp photontypes.MsgMintPhotonResponse) {
 	opt = append(opt, withKeyValue(flagFrom, from))
@@ -854,10 +855,23 @@ func (s *IntegrationTestSuite) execPhotonMint(
 		"-y",
 	}
 	for flag, value := range opts {
-		atomoneCommand = append(atomoneCommand, fmt.Sprintf("--%s=%v", flag, value))
+		if !gasAuto {
+			if flag != flagGas {
+				atomoneCommand = append(atomoneCommand, fmt.Sprintf("--%s=%v", flag, value))
+			}
+		} else {
+			atomoneCommand = append(atomoneCommand, fmt.Sprintf("--%s=%v", flag, value))
+		}
 	}
 
-	s.executeAtomoneTxCommand(ctx, c, atomoneCommand, valIdx, s.defaultExecValidation(c, valIdx, &resp))
+	if gasAuto {
+		s.T().Logf("atomone command: %s", atomoneCommand)
+		s.executeAtomoneTxCommand(ctx, c, atomoneCommand, valIdx, s.defaultExecValidation(c, valIdx, &resp))
+	} else {
+		s.T().Logf("[Expect Err] atomone command: %s", atomoneCommand)
+
+		s.executeAtomoneTxCommand(ctx, c, atomoneCommand, valIdx, s.expectErrExecValidation(c, valIdx, true))
+	}
 	return
 }
 
