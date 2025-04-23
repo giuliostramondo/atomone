@@ -23,7 +23,7 @@ func (s *IntegrationTestSuite) testMintPhoton() {
 			s.Require().Positive(conversionRate.MustFloat64())
 			burnedAtoneAmt := sdk.NewInt64Coin(uatoneDenom, 1_000_000)
 
-			resp := s.execPhotonMint(s.chainA, valIdx, alice.String(), burnedAtoneAmt.String(), true,
+			resp := s.execPhotonMint(s.chainA, valIdx, alice.String(), burnedAtoneAmt.String(), true, false,
 				withKeyValue(flagFees, fees),
 			)
 
@@ -56,7 +56,7 @@ func (s *IntegrationTestSuite) testMintPhoton() {
 	s.Run("mint photon", subtest(standardFees))
 	atoneFees := sdk.NewCoin(uatoneDenom, standardFees.Amount)
 	s.Run("mint photon with atone fees", subtest(atoneFees))
-	s.Run("mint photon error", func() {
+	s.Run("mint photon wrong denom", func() {
 		var (
 			c             = s.chainA
 			valIdx        = 0
@@ -70,7 +70,7 @@ func (s *IntegrationTestSuite) testMintPhoton() {
 
 		// Issue an incorrect transaction with wrong Denom
 		_ = s.execPhotonMint(s.chainA, valIdx, alice.String(), "1000wrongDenom",
-			false, withKeyValue(flagFees, atoneFees),
+			false, true, withKeyValue(flagFees, atoneFees),
 		)
 
 		time.Sleep(1 * time.Second)
@@ -81,8 +81,6 @@ func (s *IntegrationTestSuite) testMintPhoton() {
 			_, afterUatoneBalance  = afterBalance.Find(uatoneDenom)
 		)
 
-		s.T().Logf("Alice balance before tx: %s", beforeUatoneBalance)
-		s.T().Logf("Alice balance after tx: %s", afterUatoneBalance)
-		s.Require().True(beforeUatoneBalance.IsEqual(afterUatoneBalance))
+		s.Require().True(beforeUatoneBalance.IsEqual(afterUatoneBalance), "Fees should not be deducted for a malformed tx\nAlice balance before tx: %s\nAlice balance after tx: %s", beforeUatoneBalance, afterUatoneBalance)
 	})
 }
