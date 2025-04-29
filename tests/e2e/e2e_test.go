@@ -111,4 +111,5 @@ func (s *IntegrationTestSuite) TestFeemarket() {
 		s.T().Skip()
 	}
 	s.testFeemarketQuery()
+	s.testFeemarketGasPriceChange()
 }

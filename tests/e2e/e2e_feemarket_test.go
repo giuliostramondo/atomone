@@ -2,6 +2,9 @@ package e2e
 
 import (
 	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx"
+	"time"
 )
 
 /*
@@ -34,19 +37,19 @@ func (s *IntegrationTestSuite) testFeemarketQuery() {
 		s.Require().Equal("uphoton", params.Params.FeeDenom)
 		s.Require().True(params.Params.Enabled)
 
-		fmt.Println("Feemarket Params")
-		fmt.Println("------")
-		fmt.Println("Alpha: ", params.Params.Alpha)
-		fmt.Println("Beta: ", params.Params.Beta)
-		fmt.Println("Gamma: ", params.Params.Gamma)
-		fmt.Println("Delta: ", params.Params.Delta)
-		fmt.Println("min_base_gas_price: ", params.Params.MinBaseGasPrice)
-		fmt.Println("min_learning_rate: ", params.Params.MinLearningRate)
-		fmt.Println("max_learning_rate: ", params.Params.MaxLearningRate)
-		fmt.Println("max_block_utilization: ", params.Params.MaxBlockUtilization)
-		fmt.Println("window_size: ", params.Params.Window)
-		fmt.Println("fee_denom: ", params.Params.FeeDenom)
-		fmt.Println("enabled: ", params.Params.Enabled)
+		s.T().Logf("Feemarket Params")
+		s.T().Logf("------")
+		s.T().Logf("Alpha: %s", params.Params.Alpha)
+		s.T().Logf("Beta: %s", params.Params.Beta)
+		s.T().Logf("Gamma: %s", params.Params.Gamma)
+		s.T().Logf("Delta: %s", params.Params.Delta)
+		s.T().Logf("min_base_gas_price: %s", params.Params.MinBaseGasPrice)
+		s.T().Logf("min_learning_rate: %s", params.Params.MinLearningRate)
+		s.T().Logf("max_learning_rate: %s", params.Params.MaxLearningRate)
+		s.T().Logf("max_block_utilization: %d", params.Params.MaxBlockUtilization)
+		s.T().Logf("window_size: %d", params.Params.Window)
+		s.T().Logf("fee_denom: %s", params.Params.FeeDenom)
+		s.T().Logf("enabled: %t", params.Params.Enabled)
 	})
 	s.Run("feemarket test state", func() {
 		var (
@@ -84,7 +87,7 @@ func (s *IntegrationTestSuite) testFeemarketQuery() {
 			chainEndpoint = fmt.Sprintf("http://%s", s.valResources[c.id][valIdx].GetHostPort("1317/tcp"))
 		)
 		gasPrices := s.queryFeemarketGasPrices(chainEndpoint)
-		fmt.Println("gasPrices: ", gasPrices)
+		s.T().Logf("gasPrices: %s", gasPrices)
 		atoneAmount := gasPrices.Prices.AmountOf("uatone")
 		photonAmount := gasPrices.Prices.AmountOf("uphoton")
 		s.Require().True(atoneAmount.IsPositive())
@@ -97,7 +100,112 @@ Test Gas Price change
 */
 func (s *IntegrationTestSuite) testFeemarketGasPriceChange() {
 	s.Run("gas price change", func() {
-		fmt.Println("Called Feemarket test!!")
+		var (
+			c             = s.chainA
+			valIdx        = 0
+			chainEndpoint = fmt.Sprintf("http://%s", s.valResources[c.id][valIdx].GetHostPort("1317/tcp"))
+		)
+		gasPricesInitial := s.queryFeemarketGasPrices(chainEndpoint)
+		s.T().Logf("Initial gasPrices: %s", gasPricesInitial)
+		// define one sender and two recipient accounts
+		sender, _ := c.genesisAccounts[0].keyInfo.GetAddress()
+
+		var beforeAccountBalances,
+			afterAccountBalances []sdk.Coin
+
+		// get balances of sender and recipient accounts
+		s.Require().Eventually(
+			func() bool {
+				for i := range len(c.genesisAccounts) {
+					accountID := i
+					address, _ := c.genesisAccounts[accountID].keyInfo.GetAddress()
+					addressUAtoneBalance, err := getSpecificBalance(chainEndpoint, address.String(), uatoneDenom)
+					beforeAccountBalances = append(beforeAccountBalances, addressUAtoneBalance)
+					s.Require().NoError(err)
+				}
+
+				balanceValid := beforeAccountBalances[0].IsValid()
+
+				for i := range len(c.genesisAccounts) {
+					balanceValid = balanceValid && beforeAccountBalances[i].IsValid()
+				}
+				return balanceValid
+			},
+			10*time.Second,
+			time.Second,
+		)
+
+		s.T().Logf("Total Number Of account: %d", len(c.genesisAccounts))
+
+		s.T().Logf("Initial Account Balances")
+		for i := range len(c.genesisAccounts) {
+			accountID := i
+			s.T().Logf("Account %d: %d", i, beforeAccountBalances[accountID].Amount)
+		}
+
+		var destAccounts []string
+
+		//tokenAmount = sdk.NewInt64Coin(uatoneDenom, 100_000) // 0.1atone
+		txNumber := 2
+		for i := range txNumber {
+			accountID := i%len(c.genesisAccounts) + 1
+			address, _ := c.genesisAccounts[accountID].keyInfo.GetAddress()
+			destAccounts = append(destAccounts, address.String())
+		}
+		// alice sends tokens to bob and charlie, at once
+		resp := s.execBankMultiSendAndReturn(s.chainA, valIdx, sender.String(),
+			destAccounts, tokenAmount.String(), true)
+
+		s.T().Logf("Response :\n %s", resp.String())
+
+		getRequest := fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s",
+			chainEndpoint, resp.TxHash)
+
+		s.T().Logf("HTTP get request :\n %s", getRequest)
+		body, errHttp := httpGet(getRequest)
+		var txResp tx.GetTxResponse
+		s.T().Logf("Tx Err Response:\n%s", errHttp)
+		s.T().Logf("Tx RAW Response:\n%s", body)
+		if err := cdc.UnmarshalJSON(body, &txResp); err != nil {
+			s.T().Logf("failed to read response body: %s", err)
+		}
+		s.T().Logf("Tx Response:\n%s", txResp)
+		// get balances of sender and recipient accounts
+		s.Require().Eventually(
+			func() bool {
+				for i := range len(c.genesisAccounts) {
+					accountID := i
+					address, _ := c.genesisAccounts[accountID].keyInfo.GetAddress()
+					addressUAtoneBalance, err := getSpecificBalance(chainEndpoint, address.String(), uatoneDenom)
+					afterAccountBalances = append(beforeAccountBalances, addressUAtoneBalance)
+					s.Require().NoError(err)
+				}
+
+				balanceValid := afterAccountBalances[0].IsValid()
+				for i := range len(c.genesisAccounts) {
+					balanceValid = balanceValid && afterAccountBalances[i].IsValid()
+				}
+
+				balancesAreDifferent := false
+				for i := range len(c.genesisAccounts) {
+					balancesAreDifferent = balancesAreDifferent ||
+						!afterAccountBalances[i].Amount.Equal(beforeAccountBalances[i].Amount)
+				}
+
+				return balanceValid //&& balancesAreDifferent
+			},
+			10*time.Second,
+			time.Second,
+		)
+
+		s.T().Logf("Final Account Balances")
+		for i := range len(c.genesisAccounts) {
+			accountID := i
+			s.T().Logf("Account %d: %d", i, afterAccountBalances[accountID].Amount)
+		}
+
+		gasPricesFinal := s.queryFeemarketGasPrices(chainEndpoint)
+		s.T().Logf("Final gasPrices: %s", gasPricesFinal)
 	})
 
 }

@@ -323,6 +323,42 @@ func (s *IntegrationTestSuite) execBankMultiSend(
 	s.executeAtomoneTxCommand(ctx, c, atomoneCommand, valIdx, s.expectErrExecValidation(c, valIdx, expectErr))
 }
 
+func (s *IntegrationTestSuite) execBankMultiSendAndReturn(
+	c *chain,
+	valIdx int,
+	from string,
+	to []string,
+	amt string,
+	expectErr bool,
+	opt ...flagOption,
+) sdk.TxResponse {
+	// TODO remove the hardcode opt after refactor, all methods should accept custom flags
+	opt = append(opt, withKeyValue(flagFrom, from))
+	opts := applyOptions(c.id, opt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	s.T().Logf("sending %s tokens from %s to %s on chain %s", amt, from, to, c.id)
+
+	atomoneCommand := []string{
+		atomonedBinary,
+		txCommand,
+		banktypes.ModuleName,
+		"multi-send",
+		from,
+	}
+
+	atomoneCommand = append(atomoneCommand, to...)
+	atomoneCommand = append(atomoneCommand, amt, "-y")
+
+	for flag, value := range opts {
+		atomoneCommand = append(atomoneCommand, fmt.Sprintf("--%s=%v", flag, value))
+	}
+
+	return s.executeAtomoneTxCommandAndReturn(ctx, c, atomoneCommand, valIdx, s.expectErrExecValidation(c, valIdx, expectErr))
+}
+
 type txBankSend struct { //nolint:unused
 	from      string
 	to        string
@@ -704,6 +740,46 @@ func (s *IntegrationTestSuite) executeAtomoneTxCommand(ctx context.Context, c *c
 		s.Require().FailNowf("Exec validation failed", "stdout: %s, stderr: %s",
 			string(stdOut), string(stdErr))
 	}
+}
+
+func (s *IntegrationTestSuite) executeAtomoneTxCommandAndReturn(ctx context.Context, c *chain, atomoneCommand []string, valIdx int, validation func([]byte, []byte) bool) sdk.TxResponse {
+	if validation == nil {
+		validation = s.defaultExecValidation(s.chainA, 0, nil)
+	}
+	var (
+		outBuf bytes.Buffer
+		errBuf bytes.Buffer
+	)
+	exec, err := s.dkrPool.Client.CreateExec(docker.CreateExecOptions{
+		Context:      ctx,
+		AttachStdout: true,
+		AttachStderr: true,
+		Container:    s.valResources[c.id][valIdx].Container.ID,
+		User:         "nonroot",
+		Cmd:          atomoneCommand,
+	})
+
+	s.T().Logf("AtomOne Command:\n%s", atomoneCommand)
+	s.Require().NoError(err)
+
+	err = s.dkrPool.Client.StartExec(exec.ID, docker.StartExecOptions{
+		Context:      ctx,
+		Detach:       false,
+		OutputStream: &outBuf,
+		ErrorStream:  &errBuf,
+	})
+	s.Require().NoError(err)
+
+	stdOut := outBuf.Bytes()
+	stdErr := errBuf.Bytes()
+	if !validation(stdOut, stdErr) {
+		s.Require().FailNowf("Exec validation failed", "stdout: %s, stderr: %s",
+			string(stdOut), string(stdErr))
+	}
+	var txResp sdk.TxResponse
+	fmt.Println("Error(?): \n", string(stdErr))
+	err = cdc.UnmarshalJSON(stdOut, &txResp)
+	return txResp
 }
 
 func (s *IntegrationTestSuite) executeHermesCommand(ctx context.Context, hermesCmd []string) ([]byte, error) {
