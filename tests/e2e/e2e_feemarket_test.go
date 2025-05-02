@@ -3,7 +3,7 @@ package e2e
 import (
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
+	// "github.com/cosmos/cosmos-sdk/types/tx"
 	"time"
 )
 
@@ -140,12 +140,12 @@ func (s *IntegrationTestSuite) testFeemarketGasPriceChange() {
 		s.T().Logf("Initial Account Balances")
 		for i := range len(c.genesisAccounts) {
 			accountID := i
-			s.T().Logf("Account %d: %d", i, beforeAccountBalances[accountID].Amount)
+			s.T().Logf("Account %d: %s", i, beforeAccountBalances[accountID])
 		}
 
 		var destAccounts []string
 
-		//tokenAmount = sdk.NewInt64Coin(uatoneDenom, 100_000) // 0.1atone
+		tokenAmount = sdk.NewInt64Coin(uatoneDenom, 100_000) // 0.1atone
 		txNumber := 2
 		for i := range txNumber {
 			accountID := i%len(c.genesisAccounts) + 1
@@ -154,22 +154,39 @@ func (s *IntegrationTestSuite) testFeemarketGasPriceChange() {
 		}
 		// alice sends tokens to bob and charlie, at once
 		resp := s.execBankMultiSendAndReturn(s.chainA, valIdx, sender.String(),
-			destAccounts, tokenAmount.String(), true)
+			destAccounts, tokenAmount.String(), false, withKeyValue(flagGas, "115626"))
 
+		s.execBankSend(s.chainA, valIdx, sender.String(), destAccounts[1], tokenAmount.String(), false)
 		s.T().Logf("Response :\n %s", resp.String())
 
-		getRequest := fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s",
-			chainEndpoint, resp.TxHash)
+		s.Require().Eventually(
+			func() bool {
+				err := queryAtomOneTx(chainEndpoint, resp.TxHash, nil)
+				if isErrNotFound(err) {
+					// tx not processed yet, continue
+					return false
+				}
+				s.Require().NoError(err)
+				return true
+			},
+			time.Minute,
+			time.Second,
+			"Done.",
+		)
 
-		s.T().Logf("HTTP get request :\n %s", getRequest)
-		body, errHttp := httpGet(getRequest)
-		var txResp tx.GetTxResponse
-		s.T().Logf("Tx Err Response:\n%s", errHttp)
-		s.T().Logf("Tx RAW Response:\n%s", body)
-		if err := cdc.UnmarshalJSON(body, &txResp); err != nil {
-			s.T().Logf("failed to read response body: %s", err)
-		}
-		s.T().Logf("Tx Response:\n%s", txResp)
+		// getRequest := fmt.Sprintf("%s/cosmos/tx/v1beta1/txs/%s",
+		// 	chainEndpoint, resp.TxHash)
+		//
+		// s.T().Logf("HTTP get request :\n %s", getRequest)
+		// body, errHttp := httpGet(getRequest)
+		// var txResp tx.GetTxResponse
+		// s.T().Logf("Tx Err Response:\n%s", errHttp)
+		// s.T().Logf("Tx RAW Response:\n%s", body)
+		// if err := cdc.UnmarshalJSON(body, &txResp); err != nil {
+		// 	s.T().Logf("failed to read response body: %s", err)
+		// }
+		// s.T().Logf("Tx Response:\n%s", txResp)
+		// time.Sleep(time.Second)
 		// get balances of sender and recipient accounts
 		s.Require().Eventually(
 			func() bool {
@@ -197,11 +214,17 @@ func (s *IntegrationTestSuite) testFeemarketGasPriceChange() {
 			10*time.Second,
 			time.Second,
 		)
-
 		s.T().Logf("Final Account Balances")
 		for i := range len(c.genesisAccounts) {
 			accountID := i
-			s.T().Logf("Account %d: %d", i, afterAccountBalances[accountID].Amount)
+			s.T().Logf("Account %d: %s", i, afterAccountBalances[accountID])
+		}
+
+		s.T().Logf("Balances Differences")
+		for i := range len(c.genesisAccounts) {
+			accountID := i
+			s.T().Logf("Account %d: %s", i,
+				afterAccountBalances[accountID].Amount.Sub(beforeAccountBalances[accountID].Amount))
 		}
 
 		gasPricesFinal := s.queryFeemarketGasPrices(chainEndpoint)
