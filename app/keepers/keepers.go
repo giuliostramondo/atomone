@@ -62,6 +62,8 @@ import (
 	govtypes "github.com/atomone-hub/atomone/x/gov/types"
 	govv1 "github.com/atomone-hub/atomone/x/gov/types/v1"
 	govv1beta1 "github.com/atomone-hub/atomone/x/gov/types/v1beta1"
+	mymodulekeeper "github.com/atomone-hub/atomone/x/mymodule/keeper"
+	mymoduletypes "github.com/atomone-hub/atomone/x/mymodule/types"
 	photonkeeper "github.com/atomone-hub/atomone/x/photon/keeper"
 	photontypes "github.com/atomone-hub/atomone/x/photon/types"
 )
@@ -92,6 +94,7 @@ type AppKeepers struct {
 	AuthzKeeper           authzkeeper.Keeper
 	ConsensusParamsKeeper consensusparamkeeper.Keeper
 	PhotonKeeper          *photonkeeper.Keeper
+	MymoduleKeeper        *mymodulekeeper.Keeper
 	FeemarketKeeper       *feemarketkeeper.Keeper
 
 	// Modules
@@ -205,6 +208,15 @@ func NewAppKeeper(
 	appKeepers.PhotonKeeper = photonkeeper.NewKeeper(
 		appCodec,
 		appKeepers.keys[photontypes.StoreKey],
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+		appKeepers.BankKeeper,
+		appKeepers.AccountKeeper,
+		appKeepers.StakingKeeper,
+	)
+
+	appKeepers.MymoduleKeeper = mymodulekeeper.NewKeeper(
+		appCodec,
+		appKeepers.keys[mymoduletypes.StoreKey],
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		appKeepers.BankKeeper,
 		appKeepers.AccountKeeper,

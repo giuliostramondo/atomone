@@ -48,6 +48,8 @@ import (
 	"github.com/atomone-hub/atomone/x/gov"
 	govclient "github.com/atomone-hub/atomone/x/gov/client"
 	govtypes "github.com/atomone-hub/atomone/x/gov/types"
+	"github.com/atomone-hub/atomone/x/mymodule"
+	mymoduletypes "github.com/atomone-hub/atomone/x/mymodule/types"
 	"github.com/atomone-hub/atomone/x/photon"
 	photontypes "github.com/atomone-hub/atomone/x/photon/types"
 )
@@ -63,6 +65,7 @@ var maccPerms = map[string][]string{
 	ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 	photontypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
 	feemarkettypes.ModuleName:      nil,
+	mymoduletypes.ModuleName:       nil,
 }
 
 // ModuleBasics defines the module BasicManager is in charge of setting up basic,
@@ -99,6 +102,7 @@ var ModuleBasics = module.NewBasicManager(
 	ica.AppModuleBasic{},
 	consensus.AppModuleBasic{},
 	feemarket.AppModuleBasic{},
+	mymodule.AppModuleBasic{},
 )
 
 func appModules(
@@ -134,6 +138,7 @@ func appModules(
 		app.TransferModule,
 		app.ICAModule,
 		feemarket.NewAppModule(appCodec, *app.FeemarketKeeper),
+		mymodule.NewAppModule(appCodec, *app.MymoduleKeeper, app.BankKeeper, app.AccountKeeper, app.StakingKeeper),
 	}
 }
 
