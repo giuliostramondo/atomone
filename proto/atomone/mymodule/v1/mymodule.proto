@@ -1,0 +1,13 @@
+syntax = "proto3";
+package atomone.mymodule.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/atomone-hub/atomone/x/mymodule/types";
+
+// Params defines the parameters for the x/mymodule module.
+message Params {
+  // Enables mymodule or not
+  bool mymodule_disabled = 1;
+
+}
