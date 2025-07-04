@@ -23,6 +23,7 @@ import (
 
 	feemarkettypes "github.com/atomone-hub/atomone/x/feemarket/types"
 	govtypes "github.com/atomone-hub/atomone/x/gov/types"
+	mymoduletypes "github.com/atomone-hub/atomone/x/mymodule/types"
 	photontypes "github.com/atomone-hub/atomone/x/photon/types"
 )
 
@@ -49,6 +50,7 @@ func (appKeepers *AppKeepers) GenerateKeys() {
 		consensusparamtypes.StoreKey,
 		photontypes.StoreKey,
 		feemarkettypes.StoreKey,
+		mymoduletypes.StoreKey,
 	)
 
 	// Define transient store keys

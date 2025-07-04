@@ -21,3 +21,12 @@ func (k Keeper) Params(goCtx context.Context, req *types.QueryParamsRequest) (*t
 
 	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
 }
+
+func (k Keeper) Messages(goCtx context.Context, req *types.QueryMessagesRequest) (*types.QueryMessagesResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	return &types.QueryMessagesResponse{Msgs: k.GetMessages(ctx, sdk.AccAddress(req.ToAddress))}, nil
+}

@@ -36,3 +36,11 @@ func (k msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 
 	return &types.MsgUpdateParamsResponse{}, nil
 }
+
+func (k msgServer) SendSecureText(goCtx context.Context, msg *types.MsgSendSecureText) (*types.MsgSendSecureTextResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	k.AddMessage(ctx, sdk.AccAddress(msg.Msg.ToAddress), msg.Msg)
+	return &types.MsgSendSecureTextResponse{}, nil
+}

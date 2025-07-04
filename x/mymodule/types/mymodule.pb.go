@@ -5,17 +5,22 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	github_com_cosmos_gogoproto_types "github.com/cosmos/gogoproto/types"
+	_ "google.golang.org/protobuf/types/known/timestamppb"
 	io "io"
 	math "math"
 	math_bits "math/bits"
+	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+var _ = time.Kitchen
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
@@ -69,8 +74,96 @@ func (m *Params) GetMymoduleDisabled() bool {
 	return false
 }
 
+// Params defines the parameters for the x/mymodule module.
+type SecureMessage struct {
+	SubmitTime           *time.Time `protobuf:"bytes,1,opt,name=submit_time,json=submitTime,proto3,stdtime" json:"submit_time,omitempty"`
+	EncryptedFromAddress []byte     `protobuf:"bytes,2,opt,name=encrypted_from_address,json=encryptedFromAddress,proto3" json:"encrypted_from_address,omitempty"`
+	ToAddress            string     `protobuf:"bytes,3,opt,name=to_address,json=toAddress,proto3" json:"to_address,omitempty"`
+	EncryptedText        []byte     `protobuf:"bytes,4,opt,name=encrypted_text,json=encryptedText,proto3" json:"encrypted_text,omitempty"`
+	Signature            string     `protobuf:"bytes,5,opt,name=signature,proto3" json:"signature,omitempty"`
+}
+
+func (m *SecureMessage) Reset()         { *m = SecureMessage{} }
+func (m *SecureMessage) String() string { return proto.CompactTextString(m) }
+func (*SecureMessage) ProtoMessage()    {}
+func (*SecureMessage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c40c546878187eda, []int{1}
+}
+func (m *SecureMessage) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SecureMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SecureMessage.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SecureMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SecureMessage.Merge(m, src)
+}
+func (m *SecureMessage) XXX_Size() int {
+	return m.Size()
+}
+func (m *SecureMessage) XXX_DiscardUnknown() {
+	xxx_messageInfo_SecureMessage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SecureMessage proto.InternalMessageInfo
+
+type SecureMessages struct {
+	Msgs []*SecureMessage `protobuf:"bytes,1,rep,name=msgs,proto3" json:"msgs,omitempty"`
+}
+
+func (m *SecureMessages) Reset()         { *m = SecureMessages{} }
+func (m *SecureMessages) String() string { return proto.CompactTextString(m) }
+func (*SecureMessages) ProtoMessage()    {}
+func (*SecureMessages) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c40c546878187eda, []int{2}
+}
+func (m *SecureMessages) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SecureMessages) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SecureMessages.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SecureMessages) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SecureMessages.Merge(m, src)
+}
+func (m *SecureMessages) XXX_Size() int {
+	return m.Size()
+}
+func (m *SecureMessages) XXX_DiscardUnknown() {
+	xxx_messageInfo_SecureMessages.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SecureMessages proto.InternalMessageInfo
+
+func (m *SecureMessages) GetMsgs() []*SecureMessage {
+	if m != nil {
+		return m.Msgs
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "atomone.mymodule.v1.Params")
+	proto.RegisterType((*SecureMessage)(nil), "atomone.mymodule.v1.SecureMessage")
+	proto.RegisterType((*SecureMessages)(nil), "atomone.mymodule.v1.SecureMessages")
 }
 
 func init() {
@@ -78,18 +171,34 @@ func init() {
 }
 
 var fileDescriptor_c40c546878187eda = []byte{
-	// 175 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x4a, 0x2c, 0xc9, 0xcf,
-	0xcd, 0xcf, 0x4b, 0xd5, 0xcf, 0xad, 0xcc, 0xcd, 0x4f, 0x29, 0xcd, 0x49, 0xd5, 0x2f, 0x33, 0x84,
-	0xb3, 0xf5, 0x0a, 0x8a, 0xf2, 0x4b, 0xf2, 0x85, 0x84, 0xa1, 0x6a, 0xf4, 0xe0, 0xe2, 0x65, 0x86,
-	0x52, 0x22, 0xe9, 0xf9, 0xe9, 0xf9, 0x60, 0x79, 0x7d, 0x10, 0x0b, 0xa2, 0x54, 0xc9, 0x94, 0x8b,
-	0x2d, 0x20, 0xb1, 0x28, 0x31, 0xb7, 0x58, 0x48, 0x9b, 0x4b, 0x10, 0xa6, 0x3c, 0x3e, 0x25, 0xb3,
-	0x38, 0x31, 0x29, 0x27, 0x35, 0x45, 0x82, 0x51, 0x81, 0x51, 0x83, 0x23, 0x48, 0x00, 0x26, 0xe1,
-	0x02, 0x15, 0x77, 0xf2, 0x3c, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4,
-	0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xfd,
-	0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d, 0xa8, 0x33, 0x74, 0x33, 0x4a,
-	0x93, 0x60, 0x6c, 0xfd, 0x0a, 0x84, 0xc3, 0x4b, 0x2a, 0x0b, 0x52, 0x8b, 0x93, 0xd8, 0xc0, 0x0e,
-	0x31, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xe3, 0x73, 0x82, 0x0d, 0xd9, 0x00, 0x00, 0x00,
+	// 421 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x52, 0xcd, 0x6a, 0xdb, 0x40,
+	0x10, 0xd6, 0x26, 0x6e, 0x88, 0xd7, 0x4d, 0x68, 0x55, 0x53, 0x54, 0x53, 0x64, 0x23, 0x28, 0x18,
+	0x4a, 0x76, 0x49, 0xfa, 0x07, 0xbd, 0xc5, 0x94, 0xd2, 0x1e, 0x0a, 0x45, 0xc9, 0xa9, 0x17, 0xb1,
+	0xb2, 0x26, 0x1b, 0x81, 0xd7, 0x23, 0x76, 0x57, 0xc1, 0x7e, 0x83, 0x1e, 0xfd, 0x08, 0x79, 0x88,
+	0x3e, 0x44, 0x8f, 0xa1, 0xa7, 0xde, 0x5a, 0xec, 0x4b, 0x1f, 0xa3, 0xe8, 0xd7, 0x18, 0x72, 0x9b,
+	0xf9, 0x7e, 0xe6, 0x1b, 0x8d, 0x96, 0x06, 0xc2, 0xa2, 0xc2, 0x39, 0x70, 0xb5, 0x54, 0x98, 0xe4,
+	0x33, 0xe0, 0x37, 0xa7, 0x6d, 0xcd, 0x32, 0x8d, 0x16, 0xdd, 0x27, 0xb5, 0x86, 0xb5, 0xf8, 0xcd,
+	0xe9, 0xa0, 0x2f, 0x51, 0x62, 0xc9, 0xf3, 0xa2, 0xaa, 0xa4, 0x83, 0xa1, 0x44, 0x94, 0x33, 0xe0,
+	0x65, 0x17, 0xe7, 0x57, 0xdc, 0xa6, 0x0a, 0x8c, 0x15, 0x2a, 0xab, 0x05, 0xcf, 0xa6, 0x68, 0x14,
+	0x9a, 0xa8, 0x72, 0x56, 0x4d, 0x45, 0x05, 0x6f, 0xe8, 0xc1, 0x57, 0xa1, 0x85, 0x32, 0xee, 0x4b,
+	0xfa, 0xb8, 0x89, 0x8a, 0x92, 0xd4, 0x88, 0x78, 0x06, 0x89, 0x47, 0x46, 0x64, 0x7c, 0x18, 0x3e,
+	0x6a, 0x88, 0x0f, 0x35, 0x1e, 0xac, 0xf6, 0xe8, 0xd1, 0x05, 0x4c, 0x73, 0x0d, 0x5f, 0xc0, 0x18,
+	0x21, 0xc1, 0x3d, 0xa7, 0x3d, 0x93, 0xc7, 0x2a, 0xb5, 0x51, 0x91, 0x5e, 0x1a, 0x7b, 0x67, 0x03,
+	0x56, 0xad, 0xc6, 0x9a, 0xd5, 0xd8, 0x65, 0xb3, 0xda, 0xa4, 0xb3, 0xfa, 0x33, 0x24, 0x21, 0xad,
+	0x4c, 0x05, 0xec, 0xbe, 0xa6, 0x4f, 0x61, 0x3e, 0xd5, 0xcb, 0xcc, 0x42, 0x12, 0x5d, 0x69, 0x54,
+	0x91, 0x48, 0x12, 0x0d, 0xc6, 0x78, 0x7b, 0x23, 0x32, 0x7e, 0x18, 0xf6, 0x5b, 0xf6, 0xa3, 0x46,
+	0x75, 0x5e, 0x71, 0xee, 0x3b, 0x4a, 0x2d, 0xb6, 0xca, 0xfd, 0x11, 0x19, 0x77, 0x27, 0xde, 0xaf,
+	0x1f, 0x27, 0xfd, 0xfa, 0x3b, 0x6b, 0xdd, 0x85, 0xd5, 0xe9, 0x5c, 0x86, 0x5d, 0x8b, 0x8d, 0xf1,
+	0x05, 0x3d, 0xde, 0xc6, 0x59, 0x58, 0x58, 0xaf, 0x53, 0xc6, 0x1c, 0xb5, 0xe8, 0x25, 0x2c, 0xac,
+	0xfb, 0x9c, 0x76, 0x4d, 0x2a, 0xe7, 0xc2, 0xe6, 0x1a, 0xbc, 0x07, 0xc5, 0xf8, 0x70, 0x0b, 0xbc,
+	0x3f, 0xfc, 0x7e, 0x3b, 0x74, 0xfe, 0xdd, 0x0e, 0x9d, 0xe0, 0x13, 0x3d, 0xde, 0xb9, 0x88, 0x71,
+	0xdf, 0xd2, 0x8e, 0x32, 0xd2, 0x78, 0x64, 0xb4, 0x3f, 0xee, 0x9d, 0x05, 0xec, 0x9e, 0x3f, 0xca,
+	0x76, 0x2c, 0x61, 0xa9, 0x9f, 0x7c, 0xfe, 0xb9, 0xf6, 0xc9, 0xdd, 0xda, 0x27, 0x7f, 0xd7, 0x3e,
+	0x59, 0x6d, 0x7c, 0xe7, 0x6e, 0xe3, 0x3b, 0xbf, 0x37, 0xbe, 0xf3, 0x8d, 0xcb, 0xd4, 0x5e, 0xe7,
+	0x31, 0x9b, 0xa2, 0xe2, 0xf5, 0xb4, 0x93, 0xeb, 0x3c, 0x6e, 0x6a, 0xbe, 0xd8, 0xbe, 0x28, 0xbb,
+	0xcc, 0xc0, 0xc4, 0x07, 0xe5, 0xe1, 0x5f, 0xfd, 0x0f, 0x00, 0x00, 0xff, 0xff, 0xde, 0xdc, 0xfc,
+	0xd0, 0x72, 0x02, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -125,6 +234,104 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *SecureMessage) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SecureMessage) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SecureMessage) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintMymodule(dAtA, i, uint64(len(m.Signature)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.EncryptedText) > 0 {
+		i -= len(m.EncryptedText)
+		copy(dAtA[i:], m.EncryptedText)
+		i = encodeVarintMymodule(dAtA, i, uint64(len(m.EncryptedText)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ToAddress) > 0 {
+		i -= len(m.ToAddress)
+		copy(dAtA[i:], m.ToAddress)
+		i = encodeVarintMymodule(dAtA, i, uint64(len(m.ToAddress)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.EncryptedFromAddress) > 0 {
+		i -= len(m.EncryptedFromAddress)
+		copy(dAtA[i:], m.EncryptedFromAddress)
+		i = encodeVarintMymodule(dAtA, i, uint64(len(m.EncryptedFromAddress)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.SubmitTime != nil {
+		n1, err1 := github_com_cosmos_gogoproto_types.StdTimeMarshalTo(*m.SubmitTime, dAtA[i-github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.SubmitTime):])
+		if err1 != nil {
+			return 0, err1
+		}
+		i -= n1
+		i = encodeVarintMymodule(dAtA, i, uint64(n1))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SecureMessages) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SecureMessages) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SecureMessages) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Msgs) > 0 {
+		for iNdEx := len(m.Msgs) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Msgs[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMymodule(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintMymodule(dAtA []byte, offset int, v uint64) int {
 	offset -= sovMymodule(v)
 	base := offset
@@ -144,6 +351,50 @@ func (m *Params) Size() (n int) {
 	_ = l
 	if m.MymoduleDisabled {
 		n += 2
+	}
+	return n
+}
+
+func (m *SecureMessage) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.SubmitTime != nil {
+		l = github_com_cosmos_gogoproto_types.SizeOfStdTime(*m.SubmitTime)
+		n += 1 + l + sovMymodule(uint64(l))
+	}
+	l = len(m.EncryptedFromAddress)
+	if l > 0 {
+		n += 1 + l + sovMymodule(uint64(l))
+	}
+	l = len(m.ToAddress)
+	if l > 0 {
+		n += 1 + l + sovMymodule(uint64(l))
+	}
+	l = len(m.EncryptedText)
+	if l > 0 {
+		n += 1 + l + sovMymodule(uint64(l))
+	}
+	l = len(m.Signature)
+	if l > 0 {
+		n += 1 + l + sovMymodule(uint64(l))
+	}
+	return n
+}
+
+func (m *SecureMessages) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Msgs) > 0 {
+		for _, e := range m.Msgs {
+			l = e.Size()
+			n += 1 + l + sovMymodule(uint64(l))
+		}
 	}
 	return n
 }
@@ -203,6 +454,308 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.MymoduleDisabled = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMymodule(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SecureMessage) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMymodule
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SecureMessage: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SecureMessage: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SubmitTime", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.SubmitTime == nil {
+				m.SubmitTime = new(time.Time)
+			}
+			if err := github_com_cosmos_gogoproto_types.StdTimeUnmarshal(m.SubmitTime, dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EncryptedFromAddress", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EncryptedFromAddress = append(m.EncryptedFromAddress[:0], dAtA[iNdEx:postIndex]...)
+			if m.EncryptedFromAddress == nil {
+				m.EncryptedFromAddress = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ToAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ToAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EncryptedText", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EncryptedText = append(m.EncryptedText[:0], dAtA[iNdEx:postIndex]...)
+			if m.EncryptedText == nil {
+				m.EncryptedText = []byte{}
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signature = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMymodule(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SecureMessages) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMymodule
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SecureMessages: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SecureMessages: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Msgs", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMymodule
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMymodule
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Msgs = append(m.Msgs, &SecureMessage{})
+			if err := m.Msgs[len(m.Msgs)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMymodule(dAtA[iNdEx:])
